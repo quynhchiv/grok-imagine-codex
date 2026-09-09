@@ -1,0 +1,26 @@
+node_modules/
+.tmp-test/
+.env
+.env.*
+!.env.example
+*.log
+*.tmp
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+tools/
+
+# Local credentials and generated media
+.grok/
+auth.json
+grok-imagine-output/
+*.png
+*.jpg
+*.jpeg
+*.webp
+*.mp4
+
+# Keep plugin artwork tracked
+!.agents/plugins/plugins/grok-imagine/assets/*.png
+!.agents/plugins/plugins/grok-imagine/assets/*.jpg
+!.agents/plugins/plugins/grok-imagine/assets/*.webp

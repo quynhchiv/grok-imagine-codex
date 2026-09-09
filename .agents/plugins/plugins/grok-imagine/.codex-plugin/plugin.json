@@ -1,0 +1,29 @@
+{
+  "name": "grok-imagine",
+  "version": "0.2.0",
+  "description": "Generate and edit images and videos with Grok Imagine, signed in through official Grok CLI OAuth (grok login).",
+  "author": {
+    "name": "quynhchiv",
+    "url": "https://github.com/quynhchiv"
+  },
+  "homepage": "https://github.com/quynhchiv/grok-imagine-codex#readme",
+  "repository": "https://github.com/quynhchiv/grok-imagine-codex",
+  "license": "MIT",
+  "keywords": ["grok", "xai", "imagine", "image", "video", "oauth"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Grok Imagine",
+    "shortDescription": "Grok image/video + n8n-style flow canvas",
+    "longDescription": "Lets Codex create and edit images and videos with Grok Imagine, plus a local n8n-style flow canvas (open_flow_ui) to inspect and run image→video pipelines. Sign in with grok login --oauth.",
+    "developerName": "quynhchiv",
+    "websiteURL": "https://github.com/quynhchiv/grok-imagine-codex",
+    "category": "Productivity",
+    "capabilities": ["Write"],
+    "defaultPrompt": [
+      "Generate a 1:1 origami fox icon with Grok Imagine",
+      "Animate that frame into a 6s video",
+      "Open the Imagine flow canvas so I can control the pipeline"
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "grok-imagine",
+  "interface": {
+    "displayName": "Grok Imagine"
+  },
+  "plugins": [
+    {
+      "name": "grok-imagine",
+      "source": {
+        "source": "local",
+        "path": "./plugins/grok-imagine"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
