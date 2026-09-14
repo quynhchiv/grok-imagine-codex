@@ -2,7 +2,7 @@
 name: grok-imagine
 description: >
   Generate and edit images and videos with Grok Imagine through the grok-imagine MCP tools,
-  signed in via official Grok CLI OAuth (grok login). Use when the user asks to create,
+  authenticated with a user-owned XAI_API_KEY or Grok CLI OAuth. Use when the user asks to create,
   generate, edit, or animate images or videos; Vietnamese triggers include tạo ảnh, sửa ảnh,
   generate image, animate, video, I2V, R2V, Grok Imagine.
 ---
@@ -24,10 +24,11 @@ Do not skip the UI when they explicitly asked for the canvas.
 
 ## Auth
 
-1. Call `grok_auth_status` before the first media tool in a thread.
-2. If there is no session or it is expired/401: call `grok_login` with `mode=oauth` (browser). Headless/SSH: `mode=device`.
-3. If MCP cannot open a browser, tell the user to run `grok login --oauth` in a terminal, then `grok_auth_status` again.
-4. Never print access tokens, refresh tokens, or `auth.json`.
+1. Call `grok_imagine_doctor` before the first media tool in a thread.
+2. Prefer a user-owned `XAI_API_KEY`. Never ask the user to paste it into chat; it must be set locally and Codex restarted.
+3. OAuth alternative: call `grok_login` with `mode=oauth` (browser). Headless/SSH: `mode=device`.
+4. If MCP cannot open a browser, tell the user to run `grok login --oauth` in a terminal, then call `grok_imagine_doctor` again.
+5. Never print access tokens, refresh tokens, API keys, or `auth.json`.
 
 ## When not to use Imagine
 

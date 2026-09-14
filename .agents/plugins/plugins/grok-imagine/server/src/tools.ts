@@ -19,6 +19,7 @@ import type { ImagineFlow, TemplateName } from "./flow-types.js";
 import { resolveGrokBinary } from "./paths.js";
 import { openBrowser } from "./browser.js";
 import { ensureUiServer, uiUrl } from "./ui-server.js";
+import { formatDoctor, runDoctor } from "./doctor.js";
 
 type Content = Array<
   | { type: "text"; text: string }
@@ -43,6 +44,21 @@ async function withToken<T>(fn: (token: string) => Promise<T>): Promise<T> {
 }
 
 export function registerTools(server: McpServer): void {
+  server.tool(
+    "grok_imagine_doctor",
+    "Run a safe setup check for Node.js, Codex/Grok CLI, authentication, xAI model access, and output storage. Does not generate media.",
+    {
+      check_api: z.boolean().optional().describe("Call the read-only xAI models endpoint. Default true."),
+    },
+    async ({ check_api }) => {
+      try {
+        return ok(formatDoctor(await runDoctor(check_api !== false)));
+      } catch (err) {
+        return fail(err);
+      }
+    },
+  );
+
   server.tool(
     "grok_auth_status",
     "Check Grok CLI OAuth session (~/.grok/auth.json), Grok binary, and whether the token can call api.x.ai. Never returns secrets.",
@@ -136,7 +152,7 @@ export function registerTools(server: McpServer): void {
 
   server.tool(
     "generate_image",
-    "Generate an image with Grok Imagine (grok-imagine-image-2.0) using the Grok CLI OAuth session. Saves a local file and returns the path.",
+    "Generate an image with Grok Imagine (grok-imagine-image-2.0) using XAI_API_KEY or Grok CLI OAuth. This may consume paid quota; saves a local file and returns the path.",
     {
       prompt: z.string().min(1).describe("Full image description. Lead with subject, then setting, style, lighting."),
       aspect_ratio: z

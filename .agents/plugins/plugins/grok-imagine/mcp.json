@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "grok-imagine": {
+      "command": "node",
+      "args": ["./server/dist/index.js"],
+      "cwd": ".",
+      "startup_timeout_sec": 30,
+      "tool_timeout_sec": 720
+    }
+  }
+}

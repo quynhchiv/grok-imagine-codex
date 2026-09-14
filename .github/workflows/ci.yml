@@ -9,7 +9,12 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [20, 22]
+    runs-on: ${{ matrix.os }}
     defaults:
       run:
         working-directory: .agents/plugins/plugins/grok-imagine/server
@@ -17,9 +22,24 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node }}
           cache: npm
           cache-dependency-path: .agents/plugins/plugins/grok-imagine/server/package-lock.json
       - run: npm ci
       - run: npm test
       - run: npm run build
+      - run: node scripts/mcp-smoke.mjs
+
+  validate-package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m json.tool .agents/plugins/marketplace.json > /dev/null
+      - run: python -m json.tool .agents/plugins/plugins/grok-imagine/.codex-plugin/plugin.json > /dev/null
+      - run: python -m json.tool .agents/plugins/plugins/grok-imagine/.mcp.json > /dev/null
+      - run: python -m json.tool .agents/plugins/plugins/grok-imagine/plugin.json > /dev/null
+      - run: python -m json.tool .agents/plugins/plugins/grok-imagine/mcp.json > /dev/null
+      - run: node .agents/plugins/plugins/grok-imagine/server/scripts/validate-package.mjs

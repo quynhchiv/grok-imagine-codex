@@ -155,9 +155,13 @@ function needsRefresh(entry: GrokAuthEntry): boolean {
 }
 
 export async function resolveAuth(filePath = authJsonPath()): Promise<ResolvedAuth> {
+  const apiKey = envApiKey();
+  if (apiKey) {
+    return { token: apiKey, info: { mode: "api_key", expired: false, source: "xai-api-key" } };
+  }
+
   const file = readAuthFile(filePath);
   const picked = file ? pickEntry(file) : null;
-  const apiKey = envApiKey();
 
   if (picked) {
     let entry = picked.entry;
@@ -169,12 +173,6 @@ export async function resolveAuth(filePath = authJsonPath()): Promise<ResolvedAu
       } catch (err) {
         const stillValid = parseExpiresAt(entry.expires_at);
         if (!stillValid || stillValid.getTime() <= Date.now()) {
-          if (apiKey) {
-            return {
-              token: apiKey,
-              info: { mode: "api_key", expired: false, source: "xai-api-key" },
-            };
-          }
           throw err;
         }
       }
@@ -183,22 +181,15 @@ export async function resolveAuth(filePath = authJsonPath()): Promise<ResolvedAu
       throw new PluginError("auth_missing", "Grok CLI session has no access token. Run grok_login.");
     }
     const info = sessionFromEntry(entry);
-    if (info.expired && apiKey) {
-      return { token: apiKey, info: { mode: "api_key", expired: false, source: "xai-api-key" } };
-    }
     if (info.expired) {
       throw new PluginError("auth_expired", "Grok CLI session expired. Call grok_login (grok login --oauth).");
     }
     return { token: entry.key, info };
   }
 
-  if (apiKey) {
-    return { token: apiKey, info: { mode: "api_key", expired: false, source: "xai-api-key" } };
-  }
-
   throw new PluginError(
     "auth_missing",
-    "Not signed in to Grok. Call grok_login, or run `grok login --oauth` in a terminal. Optional fallback: set XAI_API_KEY.",
+    "No xAI authentication found. Set XAI_API_KEY (recommended), or call grok_login / run `grok login --oauth`.",
   );
 }
 

@@ -69,6 +69,10 @@ export function resolveGrokBinary(): string | null {
   return findOnPath(process.platform === "win32" ? "grok.exe" : "grok");
 }
 
+export function resolveCodexBinary(): string | null {
+  return findOnPath(process.platform === "win32" ? "codex.exe" : "codex");
+}
+
 function findOnPath(name: string): string | null {
   const pathEnv = process.env.PATH ?? process.env.Path ?? "";
   const parts = pathEnv.split(path.delimiter);

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
-import { inspectSession, parseExpiresAt, readAuthFile } from "../auth.js";
+import { inspectSession, parseExpiresAt, readAuthFile, resolveAuth } from "../auth.js";
 import { redactSecrets } from "../errors.js";
 import { slugFilename } from "../paths.js";
 
@@ -65,4 +65,18 @@ test("slugFilename falls back when prompt is non-ascii", () => {
   const name = slugFilename("cáo origami đỏ", "jpg");
   assert.match(name, /^[a-z0-9TZ-]+\.jpg$/);
   assert.ok(name.endsWith(".jpg"));
+});
+
+test("resolveAuth prefers a user-owned XAI_API_KEY", async () => {
+  const previous = process.env.XAI_API_KEY;
+  process.env.XAI_API_KEY = "xai-test-secret";
+  try {
+    const auth = await resolveAuth(path.join(os.tmpdir(), "missing-grok-auth.json"));
+    assert.equal(auth.info.source, "xai-api-key");
+    assert.equal(auth.info.mode, "api_key");
+    assert.equal(auth.token, "xai-test-secret");
+  } finally {
+    if (previous === undefined) delete process.env.XAI_API_KEY;
+    else process.env.XAI_API_KEY = previous;
+  }
 });

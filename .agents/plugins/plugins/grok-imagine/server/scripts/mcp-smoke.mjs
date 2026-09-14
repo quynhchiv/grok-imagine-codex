@@ -63,6 +63,7 @@ setTimeout(() => {
     "generate_image",
     "generate_video",
     "get_video_job",
+    "grok_imagine_doctor",
     "grok_auth_status",
     "grok_login",
     "grok_logout",

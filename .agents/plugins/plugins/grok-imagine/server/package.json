@@ -1,9 +1,9 @@
 {
   "name": "grok-imagine-mcp",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
   "type": "module",
-  "description": "MCP server: Grok Imagine images/videos via Grok CLI OAuth",
+  "description": "MCP server: Grok Imagine images/videos via user-owned xAI authentication",
   "bin": {
     "grok-imagine-mcp": "./dist/index.js"
   },
@@ -12,7 +12,9 @@
     "prepare": "npm run build",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
-    "test": "tsc --noEmit && tsc --outDir .tmp-test --rootDir src && node --test .tmp-test/tests/*.js"
+    "test": "tsc --noEmit && tsc --outDir .tmp-test --rootDir src && node --test .tmp-test/tests/*.js",
+    "doctor": "node scripts/mcp-doctor.mjs",
+    "validate:package": "node scripts/validate-package.mjs"
   },
   "engines": {
     "node": ">=20"

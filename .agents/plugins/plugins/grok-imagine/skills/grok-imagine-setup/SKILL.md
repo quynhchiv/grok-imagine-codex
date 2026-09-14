@@ -1,25 +1,27 @@
 ---
 name: grok-imagine-setup
 description: >
-  First-run setup for the Grok Imagine Codex plugin. Checks Grok CLI, runs OAuth
-  login (grok login --oauth), and generates a tiny test image. Use when the user
+  First-run setup for the Grok Imagine Codex plugin. Runs a no-generation doctor,
+  helps configure user-owned xAI authentication, and offers an optional paid test. Use when the user
   installs the plugin, says setup grok imagine, đăng nhập grok, or login Grok for images.
 ---
 
 # Grok Imagine setup
 
-1. Call `grok_auth_status`.
-2. If Grok CLI is missing, tell the user (Windows PowerShell):
+1. Tell the user that setup first performs a safe check and will not generate paid media.
+2. Call `grok_imagine_doctor` with `check_api=true`.
+3. Present the result in plain language. Prefer `XAI_API_KEY`, which the user obtains from their own xAI Console account. Never ask them to paste the key into chat; tell them to set it in their local environment and restart Codex.
+4. If the user chooses Grok CLI OAuth and the CLI is missing, give the official install command for their operating system. Windows PowerShell:
 
 ```powershell
 irm https://x.ai/cli/install.ps1 | iex
 grok --version
 ```
 
-3. If there is no usable session, call `grok_login` with `mode=oauth`. If the host cannot open a browser, ask them to run `grok login --oauth` themselves.
-4. Call `grok_auth_status` again. Confirm `api.ok` is true and Imagine model ids appear (`grok-imagine-image-2.0`, `grok-imagine-video-1.5`).
-5. Call `generate_image` with a simple 1:1 prompt (`quality=low`) and show the saved path.
-6. Optionally call `open_flow_ui` with `template=image-to-video` so they can see the canvas.
-7. Summarize in Vietnamese: CLI path, email (if present), where files will be saved (`out` workspace path vs `~/grok-imagine-output`), and the flow UI URL.
+5. If OAuth was chosen and there is no usable session, call `grok_login` with `mode=oauth`. Headless/SSH: use `mode=device`.
+6. Call `grok_imagine_doctor` again. Confirm `READY` and that the required Imagine model ids appear (`grok-imagine-image-2.0`, `grok-imagine-video-1.5`).
+7. Explain that image/video generation can consume the user's xAI quota. Ask for explicit confirmation before calling `generate_image` as a paid end-to-end test. Skipping the paid test is a valid completed setup.
+8. Only after confirmation, call `generate_image` with one simple 1:1 prompt (`quality=low`, `n=1`) and show the saved path.
+9. Summarize in Vietnamese: authentication source, account email if available, model access, and the output folder. Mention the flow canvas only when the user asks for it.
 
-Never display tokens.
+Never display tokens, request a key in chat, or silently generate paid media.

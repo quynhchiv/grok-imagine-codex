@@ -11,7 +11,7 @@
   "license": "MIT",
   "keywords": ["grok", "xai", "imagine", "image", "video", "oauth", "api-key"],
   "skills": "./skills/",
-  "mcpServers": "./.mcp.json",
+  "mcpServers": "./mcp.json",
   "interface": {
     "displayName": "Grok Imagine",
     "shortDescription": "Grok image/video + n8n-style flow canvas",

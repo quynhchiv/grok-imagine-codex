@@ -6,11 +6,11 @@ import { registerTools } from "./tools.js";
 const server = new McpServer(
   {
     name: "grok-imagine",
-    version: "0.1.0",
+    version: "0.2.1",
   },
   {
     instructions:
-      "Grok Imagine for Codex. Auth is Grok CLI OAuth (grok login --oauth). For a visual n8n-style pipeline (image→video), call open_flow_ui so the user can inspect/run the live canvas at 127.0.0.1. Direct generate_image / generate_video tools still work. Never print access tokens.",
+      "Grok Imagine for Codex. Run grok_imagine_doctor for a no-generation setup check. XAI_API_KEY is preferred; Grok CLI OAuth is also supported. For a visual pipeline, call open_flow_ui. Never print access tokens.",
   },
 );
 
