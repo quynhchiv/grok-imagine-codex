@@ -22,7 +22,7 @@ Requirements: ChatGPT desktop with Codex (or a compatible Codex CLI) and Node.js
 Install a fixed release instead of the moving `main` branch:
 
 ```powershell
-codex plugin marketplace add quynhchiv/grok-imagine-codex --ref v0.2.1
+codex plugin marketplace add quynhchiv/grok-imagine-codex --ref v0.2.2
 codex plugin add grok-imagine@grok-imagine
 codex plugin list
 ```

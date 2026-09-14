@@ -23300,7 +23300,7 @@ async function runDoctor(checkApi = true) {
   );
   return {
     ready: checks.every((check2) => check2.status !== "fail"),
-    version: "0.2.1",
+    version: "0.2.2",
     platform: `${process.platform}-${process.arch}`,
     checks
   };
@@ -23686,7 +23686,7 @@ ${result.outputTail}` : null
 var server = new McpServer(
   {
     name: "grok-imagine",
-    version: "0.2.1"
+    version: "0.2.2"
   },
   {
     instructions: "Grok Imagine for Codex. Run grok_imagine_doctor for a no-generation setup check. XAI_API_KEY is preferred; Grok CLI OAuth is also supported. For a visual pipeline, call open_flow_ui. Never print access tokens."

@@ -51,7 +51,7 @@ child.stdin.write(
     params: {
       protocolVersion: "2024-11-05",
       capabilities: {},
-      clientInfo: { name: "doctor", version: "0.2.1" },
+      clientInfo: { name: "doctor", version: "0.2.2" },
     },
   })}\n`,
 );

@@ -6,7 +6,7 @@ import { registerTools } from "./tools.js";
 const server = new McpServer(
   {
     name: "grok-imagine",
-    version: "0.2.1",
+    version: "0.2.2",
   },
   {
     instructions:

@@ -7,7 +7,7 @@ Hướng dẫn này dành cho người dùng không cần sửa mã nguồn. Plu
 Mở terminal và chạy ba lệnh:
 
 ```powershell
-codex plugin marketplace add quynhchiv/grok-imagine-codex --ref v0.2.1
+codex plugin marketplace add quynhchiv/grok-imagine-codex --ref v0.2.2
 codex plugin add grok-imagine@grok-imagine
 codex plugin list
 ```
