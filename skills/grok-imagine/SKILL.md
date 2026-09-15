@@ -16,7 +16,7 @@ Use the **grok-imagine** MCP tools. Do not shell out to `grok -p` for media. Do 
 When the user wants to **see or control the pipeline** (giao diện flow, canvas, n8n, kiểm soát flow, mở UI):
 
 1. Call `open_flow_ui` (optionally with `template=image-to-video`).
-2. Tell them the local URL (`http://127.0.0.1:3847/`) opened in the browser.
+2. Return the loopback URL reported by the tool; the port is selected locally.
 3. They can drag nodes, connect ports, edit prompts, press **Chạy flow**. Node status updates live.
 4. Use `get_flow_status` / `run_flow` / `stop_flow` if they ask you to run or inspect without clicking.
 

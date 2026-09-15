@@ -155,7 +155,7 @@ export async function runDoctor(checkApi = true): Promise<DoctorReport> {
 
   return {
     ready: checks.every((check) => check.status !== "fail"),
-    version: "0.3.0",
+    version: "0.3.1",
     platform: `${process.platform}-${process.arch}`,
     checks,
   };

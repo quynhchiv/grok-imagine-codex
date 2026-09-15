@@ -1,6 +1,6 @@
 {
   "name": "grok-imagine-mcp",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "type": "module",
   "description": "Portable MCP server for Grok Imagine images/videos via Grok CLI OAuth",
@@ -8,21 +8,19 @@
     "grok-imagine-mcp": "./dist/index.js"
   },
   "scripts": {
-    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node20 --loader:.html=text --outfile=dist/index.js",
+    "build": "esbuild src/index.ts --bundle --platform=node --format=esm --target=node20 --charset=utf8 --loader:.html=text --outfile=dist/index.js",
     "prepare": "npm run build",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit",
     "test": "tsc --noEmit && tsc --outDir .tmp-test --rootDir src && node scripts/run-tests.mjs",
     "doctor": "node scripts/mcp-doctor.mjs",
+    "audit:bundle": "node scripts/audit-bundle.mjs",
     "validate:package": "node scripts/validate-package.mjs"
   },
   "engines": {
     "node": ">=20"
   },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.17.0",
-    "zod": "^3.25.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@types/node": "^24.3.0",
     "esbuild": "^0.25.9",

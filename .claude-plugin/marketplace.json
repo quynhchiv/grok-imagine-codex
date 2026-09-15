@@ -9,7 +9,7 @@
       "name": "grok-imagine",
       "source": "./",
       "description": "Generate and edit images and videos with Grok Imagine through Grok CLI OAuth.",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": {
         "name": "quynhchiv"
       },

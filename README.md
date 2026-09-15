@@ -14,6 +14,7 @@ Create and edit images and videos with Grok Imagine from any compatible Agent Pl
 - Safe setup doctor that never generates media
 - Optional local flow canvas at `http://127.0.0.1`
 - OAuth owned by each user; no maintainer key or shared account
+- Dependency-free, auditable runtime designed to pass Hermes plugin scanning
 
 ## Requirements
 
@@ -48,7 +49,7 @@ hermes plugins install grok-imagine --enable
 ### Codex
 
 ```bash
-codex plugin marketplace add quynhchiv/grok-imagine-codex --ref v0.3.0
+codex plugin marketplace add quynhchiv/grok-imagine-codex --ref v0.3.1
 codex plugin add grok-imagine@grok-imagine
 ```
 
@@ -96,6 +97,7 @@ cd server
 npm ci
 npm test
 npm run build
+npm run audit:bundle
 node scripts/mcp-smoke.mjs
 npm run validate:package
 ```

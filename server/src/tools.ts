@@ -1,5 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
+import { McpServer } from "./mcp-server.js";
+import { z } from "./schema.js";
 import { inspectSession, probeApi, resolveAuth } from "./auth.js";
 import { errorMessage, PluginError } from "./errors.js";
 import { grokVersion, runGrokLogin, runGrokLogout } from "./grok-cli.js";

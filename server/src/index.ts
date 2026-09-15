@@ -1,12 +1,11 @@
 #!/usr/bin/env node
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { McpServer } from "./mcp-server.js";
 import { registerTools } from "./tools.js";
 
 const server = new McpServer(
   {
     name: "grok-imagine",
-    version: "0.3.0",
+    version: "0.3.1",
   },
   {
     instructions:
@@ -16,5 +15,4 @@ const server = new McpServer(
 
 registerTools(server);
 
-const transport = new StdioServerTransport();
-await server.connect(transport);
+await server.start();

@@ -31,7 +31,7 @@ Lưu ý CLI chính thức dùng `plugins` (số nhiều), không phải `plugin`
 ### Codex
 
 ```bash
-codex plugin marketplace add quynhchiv/grok-imagine-codex --ref v0.3.0
+codex plugin marketplace add quynhchiv/grok-imagine-codex --ref v0.3.1
 codex plugin add grok-imagine@grok-imagine
 ```
 
