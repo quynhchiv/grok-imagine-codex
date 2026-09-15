@@ -8,7 +8,7 @@
       "name": "grok-imagine",
       "source": {
         "source": "local",
-        "path": "./.agents/plugins/plugins/grok-imagine"
+        "path": "./"
       },
       "policy": {
         "installation": "AVAILABLE",

@@ -7,14 +7,14 @@ const TOKEN_URL = "https://auth.x.ai/oauth2/token";
 const EARLY_REFRESH_MS = 5 * 60 * 1000;
 const API_BASE = "https://api.x.ai/v1";
 
-export type AuthMode = "oidc" | "api_key";
+export type AuthMode = "oidc";
 
 export interface SessionInfo {
   mode: AuthMode;
   email?: string;
   expiresAt?: string;
   expired: boolean;
-  source: "grok-cli" | "xai-api-key";
+  source: "grok-cli";
   issuer?: string;
 }
 
@@ -47,7 +47,7 @@ export function parseExpiresAt(raw?: string): Date | null {
 
 function isUsableEntry(entry: GrokAuthEntry): boolean {
   const mode = (entry.auth_mode ?? "").toLowerCase();
-  if (mode === "web_login") return false;
+  if (mode === "web_login" || mode === "api_key") return false;
   return Boolean(entry.key);
 }
 
@@ -88,9 +88,8 @@ function writeAuthFileAtomic(file: AuthFile, filePath = authJsonPath()): void {
 function sessionFromEntry(entry: GrokAuthEntry): SessionInfo {
   const exp = parseExpiresAt(entry.expires_at);
   const expired = exp ? exp.getTime() <= Date.now() : false;
-  const mode = (entry.auth_mode ?? "oidc").toLowerCase() === "api_key" ? "api_key" : "oidc";
   return {
-    mode,
+    mode: "oidc",
     email: entry.email,
     expiresAt: entry.expires_at,
     expired,
@@ -105,11 +104,6 @@ export function inspectSession(filePath = authJsonPath()): SessionInfo | null {
   const picked = pickEntry(file);
   if (!picked) return null;
   return sessionFromEntry(picked.entry);
-}
-
-function envApiKey(): string | undefined {
-  const key = process.env.XAI_API_KEY?.trim();
-  return key || undefined;
 }
 
 async function refreshOidc(entry: GrokAuthEntry): Promise<GrokAuthEntry> {
@@ -155,11 +149,6 @@ function needsRefresh(entry: GrokAuthEntry): boolean {
 }
 
 export async function resolveAuth(filePath = authJsonPath()): Promise<ResolvedAuth> {
-  const apiKey = envApiKey();
-  if (apiKey) {
-    return { token: apiKey, info: { mode: "api_key", expired: false, source: "xai-api-key" } };
-  }
-
   const file = readAuthFile(filePath);
   const picked = file ? pickEntry(file) : null;
 
@@ -189,7 +178,7 @@ export async function resolveAuth(filePath = authJsonPath()): Promise<ResolvedAu
 
   throw new PluginError(
     "auth_missing",
-    "No xAI authentication found. Set XAI_API_KEY (recommended), or call grok_login / run `grok login --oauth`.",
+    "No Grok CLI OAuth session found. Call grok_login or run `grok login --oauth`.",
   );
 }
 

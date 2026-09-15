@@ -1,7 +1,7 @@
 {
   "name": "grok-imagine",
-  "version": "0.2.2",
-  "description": "Generate and edit images and videos with Grok Imagine using a user-owned xAI API key or Grok CLI OAuth.",
+  "version": "0.3.0",
+  "description": "Generate and edit images and videos with Grok Imagine through Grok CLI OAuth.",
   "author": {
     "name": "quynhchiv",
     "url": "https://github.com/quynhchiv"
@@ -9,19 +9,19 @@
   "homepage": "https://github.com/quynhchiv/grok-imagine-codex#readme",
   "repository": "https://github.com/quynhchiv/grok-imagine-codex",
   "license": "MIT",
-  "keywords": ["grok", "xai", "imagine", "image", "video", "oauth", "api-key"],
+  "keywords": ["grok", "xai", "imagine", "image", "video", "oauth", "mcp", "agent-plugin"],
   "skills": "./skills/",
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Grok Imagine",
-    "shortDescription": "Grok image/video + n8n-style flow canvas",
-    "longDescription": "Create and edit images and videos with Grok Imagine, run a no-generation setup check, and optionally inspect image-to-video pipelines in a local flow canvas. Bring your own xAI API key or connect with Grok CLI OAuth.",
+    "shortDescription": "Grok image and video generation via OAuth",
+    "longDescription": "Create and edit images and videos with Grok Imagine from multiple agent hosts. Each user signs in through the official Grok CLI OAuth flow.",
     "developerName": "quynhchiv",
     "websiteURL": "https://github.com/quynhchiv/grok-imagine-codex",
     "category": "Productivity",
     "capabilities": ["Write"],
     "defaultPrompt": [
-      "Setup Grok Imagine and check my connection",
+      "Setup Grok Imagine and check my OAuth connection",
       "Generate a 1:1 origami fox icon",
       "Animate that frame into a 6s video"
     ]

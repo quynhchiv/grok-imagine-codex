@@ -21,6 +21,6 @@ grok-imagine-output/
 *.mp4
 
 # Keep plugin artwork tracked
-!.agents/plugins/plugins/grok-imagine/assets/*.png
-!.agents/plugins/plugins/grok-imagine/assets/*.jpg
-!.agents/plugins/plugins/grok-imagine/assets/*.webp
+!assets/*.png
+!assets/*.jpg
+!assets/*.webp

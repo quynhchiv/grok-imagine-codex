@@ -1,62 +1,71 @@
-# Cài đặt Grok Imagine cho Codex
+# Cài Grok Imagine cho Codex, Claude và Hermes
 
-Hướng dẫn này dành cho người dùng không cần sửa mã nguồn. Plugin không kèm tài khoản, API key hoặc hạn mức của nhà phát triển; mỗi người sử dụng tài khoản xAI của chính mình.
+Plugin không kèm tài khoản hay hạn mức của nhà phát triển. Mỗi người dùng tự đăng nhập tài khoản Grok của mình qua Grok CLI OAuth; ảnh và video đầu ra được lưu trên máy của họ.
 
-## 1. Cài plugin
+## 1. Chuẩn bị
 
-Mở terminal và chạy ba lệnh:
+Cài Node.js 20 trở lên và Grok CLI chính thức. Sau đó kết nối tài khoản:
 
-```powershell
-codex plugin marketplace add quynhchiv/grok-imagine-codex --ref v0.2.2
-codex plugin add grok-imagine@grok-imagine
-codex plugin list
+```bash
+grok login --oauth
 ```
 
-Đóng và mở lại Codex, sau đó tạo task mới. Khi plugin được phát hành trong Plugins Directory, bước terminal này sẽ được thay bằng nút **Install**.
+Đây là phương thức xác thực duy nhất của plugin. Không gửi access token, refresh token hoặc file `~/.grok/auth.json` cho bất kỳ ai.
 
-## 2. Chạy hướng dẫn tự động
+## 2. Cài plugin
 
-Nhập vào Codex:
+### Hermes — một lệnh từ GitHub
+
+```bash
+hermes plugins install quynhchiv/grok-imagine-codex --enable
+```
+
+Sau khi được duyệt vào catalog chính thức của Hermes, người dùng có thể cài bằng tên ngắn:
+
+```bash
+hermes plugins install grok-imagine --enable
+```
+
+Lưu ý CLI chính thức dùng `plugins` (số nhiều), không phải `plugin`.
+
+### Codex
+
+```bash
+codex plugin marketplace add quynhchiv/grok-imagine-codex --ref v0.3.0
+codex plugin add grok-imagine@grok-imagine
+```
+
+### Claude Code
+
+```bash
+claude plugin marketplace add quynhchiv/grok-imagine-codex
+claude plugin install grok-imagine@grok-imagine
+```
+
+Khởi động lại agent và tạo task mới sau khi cài.
+
+## 3. Chạy hướng dẫn tự động
+
+Nhập:
 
 ```text
 Setup Grok Imagine
 ```
 
-Plugin sẽ kiểm tra Node.js, Codex, Grok CLI, kết nối xAI và thư mục lưu. Quá trình kiểm tra không tạo ảnh/video và không dùng lượt tạo media.
+Plugin kiểm tra Node.js, agent host, Grok CLI, OAuth, quyền truy cập model và thư mục lưu. Quá trình doctor không tạo ảnh/video và không dùng lượt media.
 
-## 3. Kết nối tài khoản xAI
+Nếu chưa đăng nhập, công cụ có thể mở luồng OAuth. Trên máy headless/SSH có thể dùng device-code. Sau khi đăng nhập, nhập `Check Grok Imagine setup`; thiết lập hoàn tất khi doctor báo `READY`.
 
-Bạn có hai lựa chọn:
+## 4. Tạo ảnh/video đầu tiên
 
-- **xAI API key:** ổn định và phù hợp cho người dùng kỹ thuật. Tạo key trong tài khoản xAI Console của bạn, đặt biến môi trường `XAI_API_KEY`, rồi khởi động lại Codex. Không gửi key vào chat.
-- **Grok CLI OAuth:** thuận tiện cho người dùng phổ thông. Cài Grok CLI chính thức, sau đó chạy `grok login --oauth` và đăng nhập trong trình duyệt.
-
-Nếu máy không tự mở trình duyệt, dùng `grok login --device-auth`.
-
-## 4. Kiểm tra kết quả
-
-Nhập:
-
-```text
-Check Grok Imagine setup
-```
-
-- `PASS`: thành phần hoạt động.
-- `WARN`: vẫn có thể hoạt động nhưng nên kiểm tra.
-- `FAIL`: làm theo dòng `Fix`, rồi chạy lại kiểm tra.
-
-Thiết lập được xem là hoàn tất khi doctor báo `READY`. Bạn không bắt buộc tạo ảnh thử.
-
-## 5. Tạo ảnh/video đầu tiên
-
-Việc tạo media có thể sử dụng hạn mức hoặc phát sinh chi phí trên tài khoản xAI của bạn. Sau khi kiểm tra quyền model và chi phí, thử:
+Tạo media có thể dùng hạn mức hoặc phát sinh chi phí trên tài khoản Grok của người dùng. Sau khi đã kiểm tra quyền model và chi phí, thử:
 
 ```text
 Tạo một ảnh thử 1:1 chất lượng thấp: cáo origami màu đỏ trên nền trắng.
 ```
 
-File mặc định được lưu trong `grok-imagine-output` ở thư mục người dùng. Có thể đặt biến `GROK_IMAGINE_OUT` thành một đường dẫn tuyệt đối khác.
+File mặc định nằm trong thư mục `grok-imagine-output` của người dùng. Có thể đặt `GROK_IMAGINE_OUT` thành một đường dẫn tuyệt đối khác.
 
 ## Khi cần hỗ trợ
 
-Gửi phần kết quả của `Check Grok Imagine setup`, nhưng xóa thông tin cá nhân nếu cần. Không bao giờ gửi `XAI_API_KEY`, access token, refresh token hoặc file `~/.grok/auth.json`.
+Gửi kết quả của `Check Grok Imagine setup` và xóa thông tin cá nhân nếu cần. Không bao giờ gửi access token, refresh token hoặc file `~/.grok/auth.json`.

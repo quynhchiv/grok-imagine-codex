@@ -2,12 +2,12 @@
 name: grok-imagine
 description: >
   Generate and edit images and videos with Grok Imagine through the grok-imagine MCP tools,
-  authenticated with a user-owned XAI_API_KEY or Grok CLI OAuth. Use when the user asks to create,
+  authenticated with the user's own account through Grok CLI OAuth. Use when the user asks to create,
   generate, edit, or animate images or videos; Vietnamese triggers include tạo ảnh, sửa ảnh,
   generate image, animate, video, I2V, R2V, Grok Imagine.
 ---
 
-# Grok Imagine (Codex)
+# Grok Imagine
 
 Use the **grok-imagine** MCP tools. Do not shell out to `grok -p` for media. Do not invent xAI request bodies.
 
@@ -25,10 +25,9 @@ Do not skip the UI when they explicitly asked for the canvas.
 ## Auth
 
 1. Call `grok_imagine_doctor` before the first media tool in a thread.
-2. Prefer a user-owned `XAI_API_KEY`. Never ask the user to paste it into chat; it must be set locally and Codex restarted.
-3. OAuth alternative: call `grok_login` with `mode=oauth` (browser). Headless/SSH: `mode=device`.
-4. If MCP cannot open a browser, tell the user to run `grok login --oauth` in a terminal, then call `grok_imagine_doctor` again.
-5. Never print access tokens, refresh tokens, API keys, or `auth.json`.
+2. Grok CLI OAuth is the only supported authentication method. Call `grok_login` with `mode=oauth` (browser). Headless/SSH: `mode=device`.
+3. If the MCP host cannot open a browser, tell the user to run `grok login --oauth` in a terminal, then call `grok_imagine_doctor` again.
+4. Never print access tokens, refresh tokens, or `auth.json`.
 
 ## When not to use Imagine
 
@@ -60,7 +59,7 @@ Video is a short shot, not a feature film.
 5. 1080p is only for text/image modes. Reference is capped at 720p.
 6. `edit_video` / `extend_video` (extend 2–10s) for existing MP4s.
 7. Jobs can take minutes. If you get `video_timeout` and a `request_id`, call `get_video_job`.
-8. Return the saved absolute path. Codex does not inline-play MP4s.
+8. Return the saved absolute path. If the host cannot inline-play MP4s, provide the local path.
 
 Prompt for video: one present-tense moment, one subject, one camera move. Do not stack multiple actions.
 

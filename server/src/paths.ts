@@ -66,24 +66,30 @@ export function resolveGrokBinary(): string | null {
   }
   const homeBin = path.join(grokHome(), "bin", process.platform === "win32" ? "grok.exe" : "grok");
   if (fs.existsSync(homeBin)) return homeBin;
-  return findOnPath(process.platform === "win32" ? "grok.exe" : "grok");
+  return findOnPath("grok");
 }
 
 export function resolveCodexBinary(): string | null {
-  return findOnPath(process.platform === "win32" ? "codex.exe" : "codex");
+  return findOnPath("codex");
+}
+
+export function resolveClaudeBinary(): string | null {
+  return findOnPath("claude");
+}
+
+export function resolveHermesBinary(): string | null {
+  return findOnPath("hermes");
 }
 
 function findOnPath(name: string): string | null {
   const pathEnv = process.env.PATH ?? process.env.Path ?? "";
   const parts = pathEnv.split(path.delimiter);
-  const extra =
-    process.platform === "win32" && process.env.PATHEXT
-      ? process.env.PATHEXT.split(";").filter(Boolean)
-      : [""];
+  const extra = process.platform === "win32"
+    ? (process.env.PATHEXT ?? ".COM;.EXE;.BAT;.CMD").split(";").filter(Boolean)
+    : [""];
   for (const dir of parts) {
     if (!dir) continue;
-    const candidates = extra.map((ext) => path.join(dir, name.endsWith(".exe") ? name : `${name}${ext}`));
-    if (!name.endsWith(".exe")) candidates.unshift(path.join(dir, name));
+    const candidates = [path.join(dir, name), ...extra.map((ext) => path.join(dir, `${name}${ext.toLowerCase()}`)), ...extra.map((ext) => path.join(dir, `${name}${ext.toUpperCase()}`))];
     for (const c of candidates) {
       try {
         if (fs.existsSync(c) && fs.statSync(c).isFile()) return c;

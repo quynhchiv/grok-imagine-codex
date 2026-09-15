@@ -21508,19 +21508,24 @@ function resolveGrokBinary() {
   }
   const homeBin = path.join(grokHome(), "bin", process.platform === "win32" ? "grok.exe" : "grok");
   if (fs.existsSync(homeBin)) return homeBin;
-  return findOnPath(process.platform === "win32" ? "grok.exe" : "grok");
+  return findOnPath("grok");
 }
 function resolveCodexBinary() {
-  return findOnPath(process.platform === "win32" ? "codex.exe" : "codex");
+  return findOnPath("codex");
+}
+function resolveClaudeBinary() {
+  return findOnPath("claude");
+}
+function resolveHermesBinary() {
+  return findOnPath("hermes");
 }
 function findOnPath(name) {
   const pathEnv = process.env.PATH ?? process.env.Path ?? "";
   const parts = pathEnv.split(path.delimiter);
-  const extra = process.platform === "win32" && process.env.PATHEXT ? process.env.PATHEXT.split(";").filter(Boolean) : [""];
+  const extra = process.platform === "win32" ? (process.env.PATHEXT ?? ".COM;.EXE;.BAT;.CMD").split(";").filter(Boolean) : [""];
   for (const dir of parts) {
     if (!dir) continue;
-    const candidates = extra.map((ext) => path.join(dir, name.endsWith(".exe") ? name : `${name}${ext}`));
-    if (!name.endsWith(".exe")) candidates.unshift(path.join(dir, name));
+    const candidates = [path.join(dir, name), ...extra.map((ext) => path.join(dir, `${name}${ext.toLowerCase()}`)), ...extra.map((ext) => path.join(dir, `${name}${ext.toUpperCase()}`))];
     for (const c of candidates) {
       try {
         if (fs.existsSync(c) && fs.statSync(c).isFile()) return c;
@@ -21543,7 +21548,7 @@ function parseExpiresAt(raw) {
 }
 function isUsableEntry(entry) {
   const mode = (entry.auth_mode ?? "").toLowerCase();
-  if (mode === "web_login") return false;
+  if (mode === "web_login" || mode === "api_key") return false;
   return Boolean(entry.key);
 }
 function pickEntry(file) {
@@ -21579,9 +21584,8 @@ function writeAuthFileAtomic(file, filePath = authJsonPath()) {
 function sessionFromEntry(entry) {
   const exp = parseExpiresAt(entry.expires_at);
   const expired = exp ? exp.getTime() <= Date.now() : false;
-  const mode = (entry.auth_mode ?? "oidc").toLowerCase() === "api_key" ? "api_key" : "oidc";
   return {
-    mode,
+    mode: "oidc",
     email: entry.email,
     expiresAt: entry.expires_at,
     expired,
@@ -21595,10 +21599,6 @@ function inspectSession(filePath = authJsonPath()) {
   const picked = pickEntry(file);
   if (!picked) return null;
   return sessionFromEntry(picked.entry);
-}
-function envApiKey() {
-  const key = process.env.XAI_API_KEY?.trim();
-  return key || void 0;
 }
 async function refreshOidc(entry) {
   const refreshToken = entry.refresh_token;
@@ -21637,10 +21637,6 @@ function needsRefresh(entry) {
   return exp.getTime() - Date.now() <= EARLY_REFRESH_MS;
 }
 async function resolveAuth(filePath = authJsonPath()) {
-  const apiKey = envApiKey();
-  if (apiKey) {
-    return { token: apiKey, info: { mode: "api_key", expired: false, source: "xai-api-key" } };
-  }
   const file = readAuthFile(filePath);
   const picked = file ? pickEntry(file) : null;
   if (picked) {
@@ -21668,7 +21664,7 @@ async function resolveAuth(filePath = authJsonPath()) {
   }
   throw new PluginError(
     "auth_missing",
-    "No xAI authentication found. Set XAI_API_KEY (recommended), or call grok_login / run `grok login --oauth`."
+    "No Grok CLI OAuth session found. Call grok_login or run `grok login --oauth`."
   );
 }
 async function probeApi(token) {
@@ -21931,7 +21927,7 @@ async function apiJson(token, method, apiPath, body, timeoutMs = 18e4) {
       if (res.status === 403) {
         throw new PluginError(
           "auth_forbidden",
-          `Imagine API 403 (no entitlement or billing). SuperGrok/X Premium+ session or XAI_API_KEY from console.x.ai. ${msg}`,
+          `Imagine API 403 (the connected Grok account may not have Imagine entitlement or billing). ${msg}`,
           403
         );
       }
@@ -23222,30 +23218,29 @@ async function runDoctor(checkApi = true) {
       name: "node",
       status: "fail",
       message: `Node.js ${process.versions.node}; version 20+ is required`,
-      fix: "Install Node.js 20 LTS or newer, then restart Codex."
+      fix: "Install Node.js 20 LTS or newer, then restart your agent host."
     }
   );
-  const codex = resolveCodexBinary();
+  const hosts = [
+    ["Codex", resolveCodexBinary()],
+    ["Claude", resolveClaudeBinary()],
+    ["Hermes", resolveHermesBinary()]
+  ].filter((entry) => Boolean(entry[1]));
   checks.push(
-    codex ? { name: "codex", status: "pass", message: `Codex CLI found: ${codex}` } : {
-      name: "codex",
+    hosts.length ? { name: "agent_host", status: "pass", message: hosts.map(([name, bin]) => `${name}: ${bin}`).join("; ") } : {
+      name: "agent_host",
       status: "warn",
-      message: "Codex CLI was not found on PATH. The desktop host may still run the plugin.",
-      fix: "If CLI commands fail, install/update Codex and restart the terminal."
+      message: "Codex, Claude, and Hermes CLIs were not found on PATH. A desktop host may still run the plugin.",
+      fix: "Install or update one supported agent host and restart the terminal."
     }
   );
   const grok = resolveGrokBinary();
-  const hasApiKey = Boolean(process.env.XAI_API_KEY?.trim());
   checks.push(
-    grok ? { name: "grok_cli", status: "pass", message: `${grokVersion(grok) ?? "Grok CLI"} (${grok})` } : hasApiKey ? {
-      name: "grok_cli",
-      status: "warn",
-      message: "Grok CLI is not installed; XAI_API_KEY authentication is available."
-    } : {
+    grok ? { name: "grok_cli", status: "pass", message: `${grokVersion(grok) ?? "Grok CLI"} (${grok})` } : {
       name: "grok_cli",
       status: "fail",
-      message: "Grok CLI is not installed and XAI_API_KEY is not set.",
-      fix: "Install Grok CLI from https://x.ai/cli or set XAI_API_KEY, then restart Codex."
+      message: "Grok CLI is not installed.",
+      fix: "Install Grok CLI from https://x.ai/cli, then restart your agent host."
     }
   );
   let session = null;
@@ -23255,21 +23250,31 @@ async function runDoctor(checkApi = true) {
   } catch (err) {
     sessionReadError = errorMessage(err);
   }
+  let auth = null;
   try {
-    const auth = await resolveAuth();
+    auth = await resolveAuth();
     checks.push({
       name: "authentication",
       status: "pass",
-      message: auth.info.source === "xai-api-key" ? "XAI_API_KEY is configured (value hidden)." : `Grok CLI session is usable${session?.email ? ` for ${session.email}` : ""}.`
+      message: `Grok CLI OAuth session is usable${session?.email ? ` for ${session.email}` : ""}.`
     });
-    if (checkApi) {
+  } catch (err) {
+    checks.push({
+      name: "authentication",
+      status: "fail",
+      message: sessionReadError ?? errorMessage(err),
+      fix: sessionReadError ? "Allow the plugin to read the local Grok auth file, then restart your agent host." : "Run `grok login --oauth`, then retry."
+    });
+  }
+  if (auth && checkApi) {
+    try {
       const api = await probeApi(auth.token);
       if (!api.ok) {
         checks.push({
           name: "xai_api",
           status: "fail",
           message: `xAI API connection returned HTTP ${api.status}.`,
-          fix: "Check billing/model access, then reconnect or replace XAI_API_KEY."
+          fix: "Check account/model access, then run `grok login --oauth` again."
         });
       } else {
         const media = api.mediaModels ?? [];
@@ -23280,14 +23285,14 @@ async function runDoctor(checkApi = true) {
           ...media.length ? {} : { fix: "Check xAI billing and Imagine model entitlement." }
         });
       }
+    } catch (err) {
+      checks.push({
+        name: "xai_api",
+        status: "fail",
+        message: `Could not reach the xAI API: ${errorMessage(err)}`,
+        fix: "Check the network, proxy, or firewall, then retry. OAuth is already connected."
+      });
     }
-  } catch (err) {
-    checks.push({
-      name: "authentication",
-      status: "fail",
-      message: sessionReadError ?? errorMessage(err),
-      fix: sessionReadError ? "Allow the plugin to read the local Grok auth file, or set XAI_API_KEY and restart Codex." : "Set XAI_API_KEY (recommended) or run `grok login --oauth`, then retry."
-    });
   }
   const output = defaultOutputDir();
   checks.push(
@@ -23295,12 +23300,12 @@ async function runDoctor(checkApi = true) {
       name: "output",
       status: "fail",
       message: `Output location is not writable: ${output}`,
-      fix: "Set GROK_IMAGINE_OUT to a writable folder and restart Codex."
+      fix: "Set GROK_IMAGINE_OUT to a writable folder and restart your agent host."
     }
   );
   return {
     ready: checks.every((check2) => check2.status !== "fail"),
-    version: "0.2.2",
+    version: "0.3.0",
     platform: `${process.platform}-${process.arch}`,
     checks
   };
@@ -23335,7 +23340,7 @@ async function withToken(fn) {
 function registerTools(server2) {
   server2.tool(
     "grok_imagine_doctor",
-    "Run a safe setup check for Node.js, Codex/Grok CLI, authentication, xAI model access, and output storage. Does not generate media.",
+    "Run a safe setup check for Node.js, the current agent host, Grok CLI OAuth, xAI model access, and output storage. Does not generate media.",
     {
       check_api: external_exports.boolean().optional().describe("Call the read-only xAI models endpoint. Default true.")
     },
@@ -23356,7 +23361,6 @@ function registerTools(server2) {
         const bin = resolveGrokBinary();
         const version2 = grokVersion(bin ?? void 0);
         const session = inspectSession();
-        const hasApiKey = Boolean(process.env.XAI_API_KEY?.trim());
         let probe;
         let resolveNote = "";
         try {
@@ -23376,7 +23380,6 @@ function registerTools(server2) {
             expired: session.expired,
             issuer: session.issuer ?? null
           } : null,
-          xai_api_key_set: hasApiKey,
           api: probe ?? null,
           note: resolveNote
         };
@@ -23432,7 +23435,7 @@ ${result.outputTail}` : null
   );
   server2.tool(
     "generate_image",
-    "Generate an image with Grok Imagine (grok-imagine-image-2.0) using XAI_API_KEY or Grok CLI OAuth. This may consume paid quota; saves a local file and returns the path.",
+    "Generate an image with Grok Imagine (grok-imagine-image-2.0) using Grok CLI OAuth. This may consume paid quota; saves a local file and returns the path.",
     {
       prompt: external_exports.string().min(1).describe("Full image description. Lead with subject, then setting, style, lighting."),
       aspect_ratio: external_exports.string().optional().describe("e.g. 1:1, 16:9, 9:16, 4:3, 3:4, auto. Default auto."),
@@ -23686,10 +23689,10 @@ ${result.outputTail}` : null
 var server = new McpServer(
   {
     name: "grok-imagine",
-    version: "0.2.2"
+    version: "0.3.0"
   },
   {
-    instructions: "Grok Imagine for Codex. Run grok_imagine_doctor for a no-generation setup check. XAI_API_KEY is preferred; Grok CLI OAuth is also supported. For a visual pipeline, call open_flow_ui. Never print access tokens."
+    instructions: "Grok Imagine for agent hosts. Run grok_imagine_doctor for a no-generation setup check. Authentication is only through Grok CLI OAuth. For a visual pipeline, call open_flow_ui. Never print access tokens."
   }
 );
 registerTools(server);

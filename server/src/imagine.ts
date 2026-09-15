@@ -71,7 +71,7 @@ async function apiJson(
       if (res.status === 403) {
         throw new PluginError(
           "auth_forbidden",
-          `Imagine API 403 (no entitlement or billing). SuperGrok/X Premium+ session or XAI_API_KEY from console.x.ai. ${msg}`,
+          `Imagine API 403 (the connected Grok account may not have Imagine entitlement or billing). ${msg}`,
           403,
         );
       }

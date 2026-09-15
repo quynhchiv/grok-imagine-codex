@@ -67,16 +67,9 @@ test("slugFilename falls back when prompt is non-ascii", () => {
   assert.ok(name.endsWith(".jpg"));
 });
 
-test("resolveAuth prefers a user-owned XAI_API_KEY", async () => {
-  const previous = process.env.XAI_API_KEY;
-  process.env.XAI_API_KEY = "xai-test-secret";
-  try {
-    const auth = await resolveAuth(path.join(os.tmpdir(), "missing-grok-auth.json"));
-    assert.equal(auth.info.source, "xai-api-key");
-    assert.equal(auth.info.mode, "api_key");
-    assert.equal(auth.token, "xai-test-secret");
-  } finally {
-    if (previous === undefined) delete process.env.XAI_API_KEY;
-    else process.env.XAI_API_KEY = previous;
-  }
+test("resolveAuth ignores non-OAuth entries", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "grok-auth-"));
+  const file = path.join(dir, "auth.json");
+  fs.writeFileSync(file, JSON.stringify({ legacy: { key: "not-oauth", auth_mode: "api_key" } }));
+  await assert.rejects(resolveAuth(file), /No Grok CLI OAuth session found/);
 });

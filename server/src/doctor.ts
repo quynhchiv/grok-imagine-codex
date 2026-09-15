@@ -3,7 +3,13 @@ import path from "node:path";
 import { inspectSession, probeApi, resolveAuth } from "./auth.js";
 import { errorMessage } from "./errors.js";
 import { grokVersion } from "./grok-cli.js";
-import { defaultOutputDir, resolveCodexBinary, resolveGrokBinary } from "./paths.js";
+import {
+  defaultOutputDir,
+  resolveClaudeBinary,
+  resolveCodexBinary,
+  resolveGrokBinary,
+  resolveHermesBinary,
+} from "./paths.js";
 
 export type CheckStatus = "pass" | "warn" | "fail";
 
@@ -46,39 +52,36 @@ export async function runDoctor(checkApi = true): Promise<DoctorReport> {
           name: "node",
           status: "fail",
           message: `Node.js ${process.versions.node}; version 20+ is required`,
-          fix: "Install Node.js 20 LTS or newer, then restart Codex.",
+          fix: "Install Node.js 20 LTS or newer, then restart your agent host.",
         },
   );
 
-  const codex = resolveCodexBinary();
+  const hosts = [
+    ["Codex", resolveCodexBinary()],
+    ["Claude", resolveClaudeBinary()],
+    ["Hermes", resolveHermesBinary()],
+  ].filter((entry): entry is [string, string] => Boolean(entry[1]));
   checks.push(
-    codex
-      ? { name: "codex", status: "pass", message: `Codex CLI found: ${codex}` }
+    hosts.length
+      ? { name: "agent_host", status: "pass", message: hosts.map(([name, bin]) => `${name}: ${bin}`).join("; ") }
       : {
-          name: "codex",
+          name: "agent_host",
           status: "warn",
-          message: "Codex CLI was not found on PATH. The desktop host may still run the plugin.",
-          fix: "If CLI commands fail, install/update Codex and restart the terminal.",
+          message: "Codex, Claude, and Hermes CLIs were not found on PATH. A desktop host may still run the plugin.",
+          fix: "Install or update one supported agent host and restart the terminal.",
         },
   );
 
   const grok = resolveGrokBinary();
-  const hasApiKey = Boolean(process.env.XAI_API_KEY?.trim());
   checks.push(
     grok
       ? { name: "grok_cli", status: "pass", message: `${grokVersion(grok) ?? "Grok CLI"} (${grok})` }
-      : hasApiKey
-        ? {
-            name: "grok_cli",
-            status: "warn",
-            message: "Grok CLI is not installed; XAI_API_KEY authentication is available.",
-          }
-        : {
-            name: "grok_cli",
-            status: "fail",
-            message: "Grok CLI is not installed and XAI_API_KEY is not set.",
-            fix: "Install Grok CLI from https://x.ai/cli or set XAI_API_KEY, then restart Codex.",
-          },
+      : {
+          name: "grok_cli",
+          status: "fail",
+          message: "Grok CLI is not installed.",
+          fix: "Install Grok CLI from https://x.ai/cli, then restart your agent host.",
+        },
   );
 
   let session: ReturnType<typeof inspectSession> = null;
@@ -88,24 +91,34 @@ export async function runDoctor(checkApi = true): Promise<DoctorReport> {
   } catch (err) {
     sessionReadError = errorMessage(err);
   }
+  let auth: Awaited<ReturnType<typeof resolveAuth>> | null = null;
   try {
-    const auth = await resolveAuth();
+    auth = await resolveAuth();
     checks.push({
       name: "authentication",
       status: "pass",
-      message:
-        auth.info.source === "xai-api-key"
-          ? "XAI_API_KEY is configured (value hidden)."
-          : `Grok CLI session is usable${session?.email ? ` for ${session.email}` : ""}.`,
+      message: `Grok CLI OAuth session is usable${session?.email ? ` for ${session.email}` : ""}.`,
     });
-    if (checkApi) {
+  } catch (err) {
+    checks.push({
+      name: "authentication",
+      status: "fail",
+      message: sessionReadError ?? errorMessage(err),
+      fix: sessionReadError
+        ? "Allow the plugin to read the local Grok auth file, then restart your agent host."
+        : "Run `grok login --oauth`, then retry.",
+    });
+  }
+
+  if (auth && checkApi) {
+    try {
       const api = await probeApi(auth.token);
       if (!api.ok) {
         checks.push({
           name: "xai_api",
           status: "fail",
           message: `xAI API connection returned HTTP ${api.status}.`,
-          fix: "Check billing/model access, then reconnect or replace XAI_API_KEY.",
+          fix: "Check account/model access, then run `grok login --oauth` again.",
         });
       } else {
         const media = api.mediaModels ?? [];
@@ -118,16 +131,14 @@ export async function runDoctor(checkApi = true): Promise<DoctorReport> {
           ...(media.length ? {} : { fix: "Check xAI billing and Imagine model entitlement." }),
         });
       }
+    } catch (err) {
+      checks.push({
+        name: "xai_api",
+        status: "fail",
+        message: `Could not reach the xAI API: ${errorMessage(err)}`,
+        fix: "Check the network, proxy, or firewall, then retry. OAuth is already connected.",
+      });
     }
-  } catch (err) {
-    checks.push({
-      name: "authentication",
-      status: "fail",
-      message: sessionReadError ?? errorMessage(err),
-      fix: sessionReadError
-        ? "Allow the plugin to read the local Grok auth file, or set XAI_API_KEY and restart Codex."
-        : "Set XAI_API_KEY (recommended) or run `grok login --oauth`, then retry.",
-    });
   }
 
   const output = defaultOutputDir();
@@ -138,13 +149,13 @@ export async function runDoctor(checkApi = true): Promise<DoctorReport> {
           name: "output",
           status: "fail",
           message: `Output location is not writable: ${output}`,
-          fix: "Set GROK_IMAGINE_OUT to a writable folder and restart Codex.",
+          fix: "Set GROK_IMAGINE_OUT to a writable folder and restart your agent host.",
         },
   );
 
   return {
     ready: checks.every((check) => check.status !== "fail"),
-    version: "0.2.2",
+    version: "0.3.0",
     platform: `${process.platform}-${process.arch}`,
     checks,
   };

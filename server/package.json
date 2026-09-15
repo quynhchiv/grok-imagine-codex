@@ -1,9 +1,9 @@
 {
   "name": "grok-imagine-mcp",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
-  "description": "MCP server: Grok Imagine images/videos via user-owned xAI authentication",
+  "description": "Portable MCP server for Grok Imagine images/videos via Grok CLI OAuth",
   "bin": {
     "grok-imagine-mcp": "./dist/index.js"
   },

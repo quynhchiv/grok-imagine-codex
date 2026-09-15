@@ -1,0 +1,19 @@
+{
+  "name": "grok-imagine",
+  "owner": {
+    "name": "quynhchiv"
+  },
+  "description": "Grok Imagine plugins for image and video generation through user-owned Grok CLI OAuth.",
+  "plugins": [
+    {
+      "name": "grok-imagine",
+      "source": "./",
+      "description": "Generate and edit images and videos with Grok Imagine through Grok CLI OAuth.",
+      "version": "0.3.0",
+      "author": {
+        "name": "quynhchiv"
+      },
+      "category": "Media"
+    }
+  ]
+}

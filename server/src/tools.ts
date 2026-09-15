@@ -46,7 +46,7 @@ async function withToken<T>(fn: (token: string) => Promise<T>): Promise<T> {
 export function registerTools(server: McpServer): void {
   server.tool(
     "grok_imagine_doctor",
-    "Run a safe setup check for Node.js, Codex/Grok CLI, authentication, xAI model access, and output storage. Does not generate media.",
+    "Run a safe setup check for Node.js, the current agent host, Grok CLI OAuth, xAI model access, and output storage. Does not generate media.",
     {
       check_api: z.boolean().optional().describe("Call the read-only xAI models endpoint. Default true."),
     },
@@ -68,7 +68,6 @@ export function registerTools(server: McpServer): void {
         const bin = resolveGrokBinary();
         const version = grokVersion(bin ?? undefined);
         const session = inspectSession();
-        const hasApiKey = Boolean(process.env.XAI_API_KEY?.trim());
         let probe: Awaited<ReturnType<typeof probeApi>> | undefined;
         let resolveNote = "";
         try {
@@ -90,7 +89,6 @@ export function registerTools(server: McpServer): void {
                 issuer: session.issuer ?? null,
               }
             : null,
-          xai_api_key_set: hasApiKey,
           api: probe ?? null,
           note: resolveNote,
         };
@@ -152,7 +150,7 @@ export function registerTools(server: McpServer): void {
 
   server.tool(
     "generate_image",
-    "Generate an image with Grok Imagine (grok-imagine-image-2.0) using XAI_API_KEY or Grok CLI OAuth. This may consume paid quota; saves a local file and returns the path.",
+    "Generate an image with Grok Imagine (grok-imagine-image-2.0) using Grok CLI OAuth. This may consume paid quota; saves a local file and returns the path.",
     {
       prompt: z.string().min(1).describe("Full image description. Lead with subject, then setting, style, lighting."),
       aspect_ratio: z
